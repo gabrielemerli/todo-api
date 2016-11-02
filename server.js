@@ -51,8 +51,8 @@ app.get('/todos/:idAttivita', function (req,res){
 	if (matchedTodo) {
 		res.json(matchedTodo);
 	} else {
-		//res.status(404).send();
-		res.send(res.vivalafiga);
+		res.status(404).send();
+		//res.send('ABC');
 	}
 
 	/*Io l'ho fatto così
