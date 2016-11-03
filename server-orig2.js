@@ -3,7 +3,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var PORT = process.env.PORT || 3000;
-var _ = require('underscore');
+
 
 //Questo array simula un database (che useremo fra un po)
 var todos = [];
@@ -27,7 +27,13 @@ app.get('/todos',function(req,res){
 app.get('/todos/:idAttivita', function (req,res){
 
 	var todoId = parseInt(req.params.idAttivita, 10);
-	var matchedTodo = _.findWhere(todos, {id: todoId})
+	var matchedTodo;
+
+	todos.forEach(function (todo) {
+		if (todoId === todo.id) {
+			matchedTodo = todo;
+		}
+	});
 
 	if (matchedTodo) {
 		res.json(matchedTodo);
@@ -38,24 +44,18 @@ app.get('/todos/:idAttivita', function (req,res){
 });
 
 
+//POST /todos (l'id viene creato automaticamente,ovviamente)
+//Qui mi serve il modulo body-parser
 app.post('/todos', function(req,res) {
+	var body = req.body;
 
-	//_pick prende solo i valori dell'oggetto che corrispondono a, così se uno mi passa campi oltre a description e value li elimino
-	var body = _.pick(req.body, 'description', 'completed');
-
-	//Facciamo un po' di validation
-	if( !_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0 ){
-		//Se fallisce ritorniamo così non esegue altro codice
-		//e mandiamo di ritorno il codice 400, ovvero non posso procedere perchè i dati sono malformati
-		//.send() mandiamo dopo il 400 un corpo vuoto
-		return res.status(400).send();
-	}
-
+	//Aggiungo al body che richiedo alla pagina l'id e lo incremento di 1
 	body.id=todoNextId;
 	todoNextId++;
-	body.description = body.description.trim();
+	//Aggiungo all'array todos il body (che comprende l'id e il json in post che gli mando)
 	todos.push(body);
-
+	//console.log(todos);
+	//console.log('description '+body.description);
 	res.json(body);
 });
 
