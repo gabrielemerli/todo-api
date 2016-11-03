@@ -61,24 +61,6 @@ app.post('/todos', function(req,res) {
 });
 
 
-// DELETE /todos/:id
-app.delete('/todos/:idAttivita', function(req,res) {
-
-	var todoId = parseInt(req.params.idAttivita, 10);
-	var matchedTodo = _.findWhere(todos, {id: todoId})
-
-	if (!matchedTodo) {
-		//Se non c'è l'i da eliminare
-		res.status(404).json({"Error": "no todo found with that id"});
-	} else {
-		todos = _.without(todos,matchedTodo);
-		//Di default il .json manda il il codice 200, tutto ok
-		res.json(matchedTodo);
-	}	
-
-	
-});
-
 app.listen(PORT, function() {
 	console.log("Express listening on port "+PORT);
 })
