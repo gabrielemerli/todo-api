@@ -18,33 +18,10 @@ app.get('/', function(req,res) {
 	res.send('TODO API Root');
 });
 
-//GET /todos?completed=true
+//GET /todos
 app.get('/todos',function(req,res){
-
-	//Ora vogliamo gestire anche i valory in querystring, per esempio
-	// todos?key=value&a=b&completed=true
-	//Nel nostro caso ci interessano le attività che ancora non sono state completate
-	// todos?completed=false
-	//NOTA i parametri che arrivano son sempre STRINGHE anche se l'oggetto completed è un booleano
-	var queryParams = req.query;
-	var filteredTodos = todos;
-
-	//console.log(queryParams);
-
-	//Se in query string c'è il parametro completed e vale true allora mostro solo i todos gia completati altrimenti quelli ancora da fare
-	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-		filteredTodos = _.where(filteredTodos, {completed: true});
-	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-		filteredTodos = _.where(filteredTodos, {completed: false});
-	}
-	
-	//Se non c'è quella query string restituisco tutto
-	res.json(filteredTodos);
+	res.json(todos);
 })
-
-
-
-
 
 //GET /todos/id
 app.get('/todos/:idAttivita', function (req,res){
@@ -59,7 +36,6 @@ app.get('/todos/:idAttivita', function (req,res){
 	}
 
 });
-
 
 
 // POST /todos
