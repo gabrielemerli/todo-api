@@ -5,7 +5,7 @@ var PORT = process.env.PORT || 3000;
 var _ = require('underscore');
 var db = require('./db.js');
 
-//Questo array simula un database (che useremo fra un po)
+// Questo array simula un database (che useremo fra un po)
 var todos = [];
 //Serve per incrementare l'id delle attività che andremo a inserire tramite le api
 var todoNextId = 1;
