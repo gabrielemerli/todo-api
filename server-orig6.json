@@ -72,7 +72,6 @@ app.post('/todos', function(req, res) {
 	//_pick prende solo i valori dell'oggetto che corrispondono a, così se uno mi passa campi oltre a description e value li elimino
 	var body = _.pick(req.body, 'description', 'completed');
 
-	/*
 	//Facciamo un po' di validation
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
 		//Se fallisce ritorniamo così non esegue altro codice
@@ -80,20 +79,13 @@ app.post('/todos', function(req, res) {
 		//.send() mandiamo dopo il 400 un corpo vuoto
 		return res.status(400).send();
 	}
-	*/
 
-	db.todo.create({
-		description: body.description.trim(),
-		completed: body.completed
-	}).then(function(todo) {
-		//TUTTO OK		
-		res.json(todo.toJSON());
-		//O anche res.json(body), ma così ritorna solo description e completed poi non vedo l'id e created updated
-	}, function(e) {
-		//Problemi
-		res.status(400).json(e)
-	});
+	body.id = todoNextId;
+	todoNextId++;
+	body.description = body.description.trim();
+	todos.push(body);
 
+	res.json(body);
 });
 
 
@@ -170,9 +162,7 @@ app.put('/todos/:idAttivita', function(req, res) {
 
 
 
-db.sequelize.sync({
-	logging: console.log
-}).then(function() {
+db.sequelize.sync().then(function() {
 
 	//Qui dentro facciamo partire il server, dopo aver inizializzato il db
 	app.listen(PORT, function() {
