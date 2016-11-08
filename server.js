@@ -26,25 +26,66 @@ app.get('/todos', function(req, res) {
 	//Nel nostro caso ci interessano le attività che ancora non sono state completate
 	// todos?completed=false
 	//NOTA i parametri che arrivano son sempre STRINGHE anche se l'oggetto completed è un booleano
-	var queryParams = req.query;
-	var filteredTodos = todos;
+	var query = req.query;
+	var where = {};
+	var todoToPrint = [];
 
-	//console.log(queryParams);
 
-	//Se in query string c'è il parametro completed e vale true allora mostro solo i todos gia completati altrimenti quelli ancora da fare
-	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-		filteredTodos = _.where(filteredTodos, {
-			completed: true
-		});
-	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-		filteredTodos = _.where(filteredTodos, {
-			completed: false
-		});
+
+	//Se in query string c'è il parametro completed...
+	if (query.hasOwnProperty('completed') && query.completed === 'true') {
+		where.completed = true;
+
+	} else if (query.hasOwnProperty('completed') && query.completed === 'false') {
+		where.completed = false;
+
 	}
 
-	//Se non c'è quella query string restituisco tutto
-	res.json(filteredTodos);
-})
+	//Se im query string c'è il parametro q
+	if (query.hasOwnProperty('q') && query.q.length > 0) {
+		where.description = {
+			$like: '%' + query.q + '%'
+		};
+	}
+
+
+
+	db.todo.findAll({
+		where: where
+	}).then(function(todos) {
+			//Se l'array dei risultati è > 0
+			if (todos.length > 0) {
+				res.json(todos)
+			} else {
+				res.status(404).send();
+			}
+		},
+		function(e) {
+			res.status(500).send();
+		}); 
+
+
+	/*
+		//Se non ci sono parametri
+		db.todo.findAll({
+			where: {
+				completed: where.completed
+			}
+		}).then(function(todos) {
+			if (todos) {
+				todos.forEach(function(todo) {
+					todoToPrint.push(todo.toJSON());
+				});
+				res.json(todoToPrint);
+			} else {
+				res.status(404).send();
+			}
+
+		}, function(error) {
+			res.status(500).send();
+		});
+	*/
+});
 
 
 
