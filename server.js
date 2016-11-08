@@ -62,7 +62,7 @@ app.get('/todos', function(req, res) {
 		},
 		function(e) {
 			res.status(500).send();
-		}); 
+		});
 
 
 	/*
@@ -146,21 +146,33 @@ app.post('/todos', function(req, res) {
 app.delete('/todos/:idAttivita', function(req, res) {
 
 	var todoId = parseInt(req.params.idAttivita, 10);
+
+	//Destroy ritorna nella promessa un integer col numero delle righe distrutte, NON un'istanza dell'oggetto distrutto (o oggetti)
+
+	db.todo.destroy({
+		where: {
+			id: req.params.idAttivita
+		}
+	}).then(function(destroy) {
+		if (destroy > 0) {
+			//200 -> tutto ok,ma dei dati mi arrivano indietro
+			//204 -> Tutto ok, e non ti spettare niente di ritorno
+			res.status(204).send();
+		} else {
+			//res.status(404).send();
+			res.status(404).json({
+				error: 'No todo with id'
+			});
+		}
+
+	}, function(e) {
+		res.status(500).send();
+	});
+
+
 	var matchedTodo = _.findWhere(todos, {
 		id: todoId
-	})
-
-	if (!matchedTodo) {
-		//Se non c'è l'i da eliminare
-		res.status(404).json({
-			"Error": "no todo found with that id"
-		});
-	} else {
-		todos = _.without(todos, matchedTodo);
-		//Di default il .json manda il il codice 200, tutto ok
-		res.json(matchedTodo);
-	}
-
+	});
 
 });
 
