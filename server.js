@@ -52,18 +52,22 @@ app.get('/todos', function(req, res) {
 app.get('/todos/:idAttivita', function(req, res) {
 
 	var todoId = parseInt(req.params.idAttivita, 10);
-	var matchedTodo = _.findWhere(todos, {
-		id: todoId
-	})
 
-	if (matchedTodo) {
-		res.json(matchedTodo);
-	} else {
-		res.status(404).send();
-	}
+	db.todo.findById(todoId).then(function(todo) {
+		//todo non è un boolean, o è un oggetto o è null, per cui !! lo converte in un boolean (vero o falso)
+		if (!!todo) {
+			res.json(todo.toJSON());
+		} else {
+			//400 -> not found
+			res.status(404).send();
+		}
 
+	}, function(error) {
+		//500 -> Internal server error
+		res.status(500).send();
+
+	});
 });
-
 
 
 // POST /todos
@@ -90,7 +94,7 @@ app.post('/todos', function(req, res) {
 		res.json(todo.toJSON());
 		//O anche res.json(body), ma così ritorna solo description e completed poi non vedo l'id e created updated
 	}, function(e) {
-		//Problemi
+		//Problemi, 400 -> dati malformati
 		res.status(400).json(e)
 	});
 
