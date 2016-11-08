@@ -181,48 +181,76 @@ app.delete('/todos/:idAttivita', function(req, res) {
 app.put('/todos/:idAttivita', function(req, res) {
 
 	var todoId = parseInt(req.params.idAttivita, 10);
-	var matchedTodo = _.findWhere(todos, {
-		id: todoId
-	})
 
 	var body = _.pick(req.body, 'description', 'completed');
-	var validAttributes = {};
+	var attributes = {};
 
-	if (!matchedTodo) {
-		return res.status(404).send();
-		//se l'id fornito non corrispodne a nessun todo item memorizzato
-		//404 -> Not found
-	}
+	/*
+	NB:
+	La validazione NON funzione
+
+	https://github.com/chriso/validator.js/blob/master/README.md
+	http://docs.sequelizejs.com/en/latest/docs/models-definition/
+	o meglio, funziona ma solo sulle stringhe e solo se nel modello c'è
+	
+	validate: {
+				//Valida solo se la dimenzione della stringa è > 1 e minore di 250
+				len: [1, 250]
+			}
+
+	di base per dire sqlite non ha un tipizzazione (strict types) e memorizza tutto come stringa.
+
+	*/
 
 	//Se ciò che mi arriva ha il campo completed e se completed è un boolean => Aggiorno
-	if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-		validAttributes.completed = body.completed;
-	} else if (body.hasOwnProperty('completed')) {
-		//Se invece mi forniscono un campo ma non è un boleano (quindi non è valido)
-		//400 -> Bad syntax
-		return res.status(400).send();
+	if (body.hasOwnProperty('completed')) {
+		attributes.completed = body.completed;
 	} else {
 		//Never provided attribute allora non faccio una sega
 	}
 
 
 	//Stessa cosa ma con la descrizione che è una stringa
-	if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
-		validAttributes.description = body.description;
-	} else if (body.hasOwnProperty('description')) {
-		return res.status(400).send();
+	if (body.hasOwnProperty('description')) {
+		attributes.description = body.description;
 	} else {
 		//Never provided attribute allora non faccio una sega
 	}
 
-	//Uso il metodo extend
-	//Shallowly copy all of the properties in the source objects over to the destination object, and return the destination object
-	matchedTodo = _.extend(matchedTodo, validAttributes);
-	//Funziona perchè in js quando passi un oggetto a una funzione viene passato il reference per cui se lo aggiorni, aggiorna
-	//L'oggetto originale, non la copia...adesso me lodice vabbè
 
-	res.json(matchedTodo);
+	//Uso un istance method, ovvero un metodo da lanciare su una istanza risultato di una ricerca
+	db.todo.findById(todoId).then(function(todo) {
+		if (todo) {
+			return todo.update(attributes).then(function(todo) {
+				//Successo,ha trovato qualcosa (vien lanciato da return todo.update(attributes) sull'oggetto fetchato)
+				res.json(todo.toJSON());
+			}, function(error) {
+				res.status(400).json(error);
+				//console.log("viva la lega");
+			});
+		} else {
+			res.status(404).send();
+		}
+	}, function() {
+		res.status(500).send();
+	});
 
+
+	/*
+		db.todo.update(attributes, {
+			where: {
+				id: todoId
+			}
+		}).then(function(arUpdate) {
+			if (arUpdate[0] > 0) {
+				res.status(204).send();
+			} else {
+				res.status(404).send();
+			}
+		}, function(e) {
+			res.status(500).json(e);
+		});
+		*/
 });
 
 
