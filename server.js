@@ -273,7 +273,7 @@ app.post('/users', function(req, res) {
 
 	db.user.create(body).then(function(user) {
 		//TUTTO OK		
-		res.json(user.toJSON());
+		res.json(user.toPublicJSON());
 	}, function(e) {
 		//Problemi, 400 -> dati malformati
 		res.status(400).json(e)
@@ -281,7 +281,10 @@ app.post('/users', function(req, res) {
 
 });
 
-db.sequelize.sync().then(function() {
+db.sequelize.sync({
+	//force: true,
+	logging: console.log
+}).then(function() {
 
 	//Qui dentro facciamo partire il server, dopo aver inizializzato il db
 	app.listen(PORT, function() {
