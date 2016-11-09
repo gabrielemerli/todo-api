@@ -255,32 +255,6 @@ app.put('/todos/:idAttivita', function(req, res) {
 
 
 
-//POST /users
-app.post('/users', function(req, res) {
-
-	//_pick prende solo i valori dell'oggetto che corrispondono a, così se uno mi passa campi oltre a description e value li elimino
-	var body = _.pick(req.body, 'email', 'password');
-
-	/*
-	//Facciamo un po' di validation
-	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-		//Se fallisce ritorniamo così non esegue altro codice
-		//e mandiamo di ritorno il codice 400, ovvero non posso procedere perchè i dati sono malformati
-		//.send() mandiamo dopo il 400 un corpo vuoto
-		return res.status(400).send();
-	}
-	*/
-
-	db.user.create(body).then(function(user) {
-		//TUTTO OK		
-		res.json(user.toJSON());
-	}, function(e) {
-		//Problemi, 400 -> dati malformati
-		res.status(400).json(e)
-	});
-
-});
-
 db.sequelize.sync({
 	logging: console.log
 }).then(function() {
