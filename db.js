@@ -11,6 +11,8 @@ if (env === 'production') {
 	});
 } else {
 	sequelize = new Sequelize(undefined, undefined, undefined, {
+		//logging: false,
+		//logging: console.log
 		'dialect': 'sqlite',
 		'storage': __dirname + '/data/dev-todo-api.sqlite'
 	});

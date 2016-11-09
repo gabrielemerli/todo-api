@@ -281,9 +281,7 @@ app.post('/users', function(req, res) {
 
 });
 
-db.sequelize.sync({
-	logging: console.log
-}).then(function() {
+db.sequelize.sync().then(function() {
 
 	//Qui dentro facciamo partire il server, dopo aver inizializzato il db
 	app.listen(PORT, function() {
