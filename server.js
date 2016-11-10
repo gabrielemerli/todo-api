@@ -4,6 +4,7 @@ var app = express();
 var PORT = process.env.PORT || 3000;
 var _ = require('underscore');
 var db = require('./db.js');
+var bcrypt = require('bcrypt');
 
 // Questo array simula un database (che useremo fra un po)
 var todos = [];
@@ -280,6 +281,51 @@ app.post('/users', function(req, res) {
 	});
 
 });
+
+
+////////////////////FUNZIONE DI LOGIN DI UTENTI CREATI////////////////////////////////
+//POST /users/login
+app.post('/users/login', function(req, res) {
+
+	//_pick prende solo i valori dell'oggetto che corrispondono a, così se uno mi passa campi oltre a description e value li elimino
+	var body = _.pick(req.body, 'email', 'password');
+
+	if ((typeof body.email !== 'string') || (typeof body.password !== 'string')) {
+		res.status(404).send();
+	}
+
+	//res.status(200).json(body);
+
+	//Cerco l'utente il cui indirizzo email è quello che mi arriva in post
+	db.user.findOne({
+		where: {
+			email: body.email
+		}
+	}).then(function(user) {
+		//User è un oggetto json, non un array perchè findOne ne trova SEMPRE uno (o zero)
+		if (!user || !bcrypt.compareSync(body.password,user.password_hash)) {
+		//Lui fa così, con il .get if (!user || !bcrypt.compareSync(body.password,user.get('password_hash'))) {
+			//SE non lo trovo (fermo l'esecuzione, perchè non uso else e quindi mi devo fermare)
+			//Oppure se la password non è quella buona
+			//401 -> l'autenticazione è possibile ma fallisce
+			return res.status(401).send();
+		}
+		//Se lo trovo e la password è quella buona devo creare un token di autenticazione
+		res.json(user.toPublicJSON());
+
+
+		
+
+	}, function(e) {
+		//In caso di errore
+		res.status(500).send();
+	});
+
+
+
+});
+
+
 
 db.sequelize.sync({
 	//force: true,
