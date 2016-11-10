@@ -293,16 +293,7 @@ app.post('/users/login', function(req, res) {
 	//Al posto del codice qui sotto scrivo una funzione/metodo/oggetto che mi faccia l'autentica
 	db.user.authenticate(body).then(function(userObj) {
 		//Se va bene
-		//Nell'header metto la voce Auth, con valore il risultato dell'instance method lanciato sullo userObj.
-		//L'instance method genererà un token di tipo authentication
-		var token = userObj.generateToken('authentication');
-		if (token) {
-			res.header('Auth',token).json(userObj.toPublicJSON());
-		} else {
-			//Se qualcosa va a male nel generare il token
-			res.status(401).send();
-		}
-		
+		res.json(userObj.toPublicJSON());
 	}, function() {
 		//Se va male
 		//L'utente non esiste, la password è sbagliata
@@ -311,12 +302,45 @@ app.post('/users/login', function(req, res) {
 
 	});
 
+	// if ((typeof body.email !== 'string') || (typeof body.password !== 'string')) {
+	// 	res.status(404).send();
+	// }
+
+	// //res.status(200).json(body);
+
+	// //Cerco l'utente il cui indirizzo email è quello che mi arriva in post
+	// db.user.findOne({
+	// 	where: {
+	// 		email: body.email
+	// 	}
+	// }).then(function(user) {
+	// 	//User è un oggetto json, non un array perchè findOne ne trova SEMPRE uno (o zero)
+	// 	if (!user || !bcrypt.compareSync(body.password,user.password_hash)) {
+	// 	//Lui fa così, con il .get if (!user || !bcrypt.compareSync(body.password,user.get('password_hash'))) {
+	// 		//SE non lo trovo (fermo l'esecuzione, perchè non uso else e quindi mi devo fermare)
+	// 		//Oppure se la password non è quella buona
+	// 		//401 -> l'autenticazione è possibile ma fallisce
+	// 		return res.status(401).send();
+	// 	}
+	// 	//Se lo trovo e la password è quella buona devo creare un token di autenticazione
+	// 	res.json(user.toPublicJSON());
+
+
+		
+
+	// }, function(e) {
+	// 	//In caso di errore
+	// 	res.status(500).send();
+	// });
+
+
+
 });
 
 
 
 db.sequelize.sync({
-	//force: true,
+	force: true,
 	logging: console.log
 }).then(function() {
 
