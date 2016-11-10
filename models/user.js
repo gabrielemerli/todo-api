@@ -115,6 +115,34 @@ module.exports = function(sequelize, DataTypes) {
 						reject();
 					});
 				});
+			} ,
+			findByToken: function (token) {
+				return new Promise(function (resolve, reject) {
+					
+					try{
+						//Decode the token
+						var decodedJWT = jwt.verify(token,'loPlo01.89@');
+						//Decrypt the data in the token
+						var bytes = cryptojs.AES.decrypt(decodedJWT.token, '@+abc#123!');
+						//Ora converto quest bytes in un oggetto json
+						var tokenData = JSON.parse(bytes.toString(cryptojs.enc.Utf8));
+
+						user.findById(tokenData.id).then(function(user) {
+							if (user) {
+								resolve(user);
+							} else {
+								//Rejecto se l'id non c'è nel database
+								reject();
+							}
+						}, function (e) {
+							//Rejecto se findbyid fallisce, tipo se il db non è connesso correttamente
+							reject();
+						});
+					}catch (e) {
+						//Rejecto se try e catch fallisce, tipo se il token non ha un formato valido
+						reject();
+					}
+				});
 			}
 
 		}

@@ -5,6 +5,8 @@ var PORT = process.env.PORT || 3000;
 var _ = require('underscore');
 var db = require('./db.js');
 var bcrypt = require('bcrypt');
+//L'auth token nelle singole richieste dei todoitem va passato (A MANO) nell'header in postman
+var middleware = require('./middleware.js')(db);
 
 // Questo array simula un database (che useremo fra un po)
 var todos = [];
@@ -20,7 +22,7 @@ app.get('/', function(req, res) {
 });
 
 //GET /todos?completed=true
-app.get('/todos', function(req, res) {
+app.get('/todos', middleware.requireAuthentication, function(req, res) {
 
 	//Ora vogliamo gestire anche i valory in querystring, per esempio
 	// todos?key=value&a=b&completed=true
@@ -91,7 +93,7 @@ app.get('/todos', function(req, res) {
 
 
 //GET /todos/id
-app.get('/todos/:idAttivita', function(req, res) {
+app.get('/todos/:idAttivita',  middleware.requireAuthentication,function(req, res) {
 
 	var todoId = parseInt(req.params.idAttivita, 10);
 
@@ -113,7 +115,7 @@ app.get('/todos/:idAttivita', function(req, res) {
 
 
 // POST /todos
-app.post('/todos', function(req, res) {
+app.post('/todos', middleware.requireAuthentication, function(req, res) {
 
 	//_pick prende solo i valori dell'oggetto che corrispondono a, così se uno mi passa campi oltre a description e value li elimino
 	var body = _.pick(req.body, 'description', 'completed');
@@ -144,7 +146,7 @@ app.post('/todos', function(req, res) {
 
 
 // DELETE /todos/:id
-app.delete('/todos/:idAttivita', function(req, res) {
+app.delete('/todos/:idAttivita', middleware.requireAuthentication, function(req, res) {
 
 	var todoId = parseInt(req.params.idAttivita, 10);
 
@@ -179,7 +181,7 @@ app.delete('/todos/:idAttivita', function(req, res) {
 
 //Update a todoitem
 // PUT /todos/:id
-app.put('/todos/:idAttivita', function(req, res) {
+app.put('/todos/:idAttivita', middleware.requireAuthentication, function(req, res) {
 
 	var todoId = parseInt(req.params.idAttivita, 10);
 
