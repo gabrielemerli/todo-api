@@ -33,6 +33,8 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
 	var where = {};
 	var todoToPrint = [];
 
+	//Seleziono solo quelli il cui id è della persona loggata
+	where.userId = req.user.get('id');
 
 
 	//Se in query string c'è il parametro completed...
@@ -97,7 +99,14 @@ app.get('/todos/:idAttivita', middleware.requireAuthentication, function(req, re
 
 	var todoId = parseInt(req.params.idAttivita, 10);
 
-	db.todo.findById(todoId).then(function(todo) {
+	//db.todo.findById(todoId).then(function(todo) {
+	//Cerco solo quielli appartenenti allo user id
+	db.todo.findOne({
+		where: {
+			userId: req.user.get('id'),
+			id: todoId
+		}
+	}).then(function(todo) {
 		//todo non è un boolean, o è un oggetto o è null, per cui !! lo converte in un boolean (vero o falso)
 		if (!!todo) {
 			res.json(todo.toJSON());
@@ -161,7 +170,8 @@ app.delete('/todos/:idAttivita', middleware.requireAuthentication, function(req,
 
 	db.todo.destroy({
 		where: {
-			id: req.params.idAttivita
+			id: todoId,
+			userId: req.user.get('id')
 		}
 	}).then(function(destroy) {
 		if (destroy > 0) {
@@ -229,7 +239,14 @@ app.put('/todos/:idAttivita', middleware.requireAuthentication, function(req, re
 
 
 	//Uso un istance method, ovvero un metodo da lanciare su una istanza risultato di una ricerca
-	db.todo.findById(todoId).then(function(todo) {
+	//db.todo.findById(todoId).then(function(todo) {
+	//Cerco solo quielli appartenenti allo user id
+	db.todo.findOne({
+		where: {
+			userId: req.user.get('id'),
+			id: todoId
+		}
+	}).then(function(todo) {
 		if (todo) {
 			return todo.update(attributes).then(function(todo) {
 				//Successo,ha trovato qualcosa (vien lanciato da return todo.update(attributes) sull'oggetto fetchato)
