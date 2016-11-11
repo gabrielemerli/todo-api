@@ -93,7 +93,7 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
 
 
 //GET /todos/id
-app.get('/todos/:idAttivita',  middleware.requireAuthentication,function(req, res) {
+app.get('/todos/:idAttivita', middleware.requireAuthentication, function(req, res) {
 
 	var todoId = parseInt(req.params.idAttivita, 10);
 
@@ -134,8 +134,15 @@ app.post('/todos', middleware.requireAuthentication, function(req, res) {
 		description: body.description.trim(),
 		completed: body.completed
 	}).then(function(todo) {
-		//TUTTO OK		
-		res.json(todo.toJSON());
+		//TUTTO OK
+		//req.user c'è perchè è stato definito nel middleware		/Questo crea l'associazione
+		req.user.addTodo(todo).then(function() {
+			//Faccio un reload del todo perchè il todo che ora è referenziato non ha l'associazione che abbiamo appena aggiunto.
+			return todo.reload();
+		}).then(function(todo) {
+			res.json(todo.toJSON());
+		});
+		//res.json(todo.toJSON());
 		//O anche res.json(body), ma così ritorna solo description e completed poi non vedo l'id e created updated
 	}, function(e) {
 		//Problemi, 400 -> dati malformati
@@ -299,12 +306,12 @@ app.post('/users/login', function(req, res) {
 		//L'instance method genererà un token di tipo authentication
 		var token = userObj.generateToken('authentication');
 		if (token) {
-			res.header('Auth',token).json(userObj.toPublicJSON());
+			res.header('Auth', token).json(userObj.toPublicJSON());
 		} else {
 			//Se qualcosa va a male nel generare il token
 			res.status(401).send();
 		}
-		
+
 	}, function() {
 		//Se va male
 		//L'utente non esiste, la password è sbagliata
