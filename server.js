@@ -342,7 +342,7 @@ app.post('/users/login', function(req, res) {
 
 
 db.sequelize.sync({
-	//force: true,
+	force: true,
 	logging: console.log
 }).then(function() {
 
