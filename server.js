@@ -315,21 +315,35 @@ app.post('/users/login', function(req, res) {
 
 	//_pick prende solo i valori dell'oggetto che corrispondono a, così se uno mi passa campi oltre a description e value li elimino
 	var body = _.pick(req.body, 'email', 'password');
+	var userInstance;
 
 	//Al posto del codice qui sotto scrivo una funzione/metodo/oggetto che mi faccia l'autentica
 	db.user.authenticate(body).then(function(userObj) {
-		//Se va bene
+
+		var token = userObj.generateToken('authentication');
+		userInstance = userObj;
+
+		//Se va bene salvo il token in db
+		return db.token.create({
+			token: token
+
+		});
+
+		//Se va bene -> obsioleto
 		//Nell'header metto la voce Auth, con valore il risultato dell'instance method lanciato sullo userObj.
 		//L'instance method genererà un token di tipo authentication
-		var token = userObj.generateToken('authentication');
-		if (token) {
-			res.header('Auth', token).json(userObj.toPublicJSON());
-		} else {
-			//Se qualcosa va a male nel generare il token
-			res.status(401).send();
-		}
+		// var token = userObj.generateToken('authentication');
+		// if (token) {
+		// 	res.header('Auth', token).json(userObj.toPublicJSON());
+		// } else {
+		// 	//Se qualcosa va a male nel generare il token
+		// 	res.status(401).send();
+		// }
 
-	}, function() {
+	}).then(function(tokenInstance) {
+		res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+
+	}).catch(function() {
 		//Se va male
 		//L'utente non esiste, la password è sbagliata
 		//Con l'autentica mandiamo un messaggio scarno apposta senza spiegare cosa succede
@@ -339,6 +353,14 @@ app.post('/users/login', function(req, res) {
 
 });
 
+//DELETE /user/login
+app.delete('/users/login',middleware.requireAuthentication, function(req,res) {
+	req.token.destroy().then(function() {
+		res.status(204).send();
+	}).catch(function () {
+		res.status(500).send();
+	});
+});
 
 
 db.sequelize.sync({
